@@ -1,4 +1,4 @@
-;; org-kokoro.el --- lexical-binding: t
+;; org-kokoro.el --- -*- lexical-binding: t -*-
 ;;
 ;; Author: Minae Yui <minae.yui.sain@gmail.com>
 ;; Version: 0.1
@@ -34,32 +34,36 @@
 
 (require 'org)
 
+;; Constants
 (defconst org-kokoro-edit-src-buffer-name "org-kokoro: edit src"
   "Name of edit src buffers.")
 
+;; Modes
 (define-minor-mode org-kokoro-edit-src-mode
   "Minor mode for shadowing some keys."
   :init-value nil
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-x C-s") #'ignore)
-            (define-key map (kbd "C-x C-c") #'ignore)
+            (define-key map (kbd "C-x C-s")     #'ignore)
+            (define-key map (kbd "C-x C-c")     #'ignore)
             (define-key map (kbd "C-x C-x C-s") #'org-kokoro-edit-src-apply)
             (define-key map (kbd "C-x C-x C-c") #'org-kokoro-edit-src-reject)
 
             map))
 
+;; Goodies
 (defun org-kokoro-edit-src-apply ()
   "Apply changes in edit src buffer"
   (interactive)
   (when (and (boundp '--org-kokoro-save-function)
-             (local-variable-p --org-kokoro-save-function)
+             (local-variable-p '--org-kokoro-save-function)
              (functionp --org-kokoro-save-function))
     (funcall --org-kokoro-save-function)))
 
 (defun org-kokoro-edit-src-reject ()
   "Apply changes in edit src buffer"
   (interactive)
-  (when (string-match org-kokoro-edit-src-buffer-name (buffer-name))))
+  (when (string-match org-kokoro-edit-src-buffer-name (buffer-name))
+    (kill-buffer (current-buffer))))
 
 (defun org-kokoro-edit-src ()
   "Narrow to src block, excludes BEGIN_SRC and END_SRC."
@@ -106,26 +110,26 @@
             (when (symbol-function --language-mode)
               (funcall --language-mode))
             (org-kokoro-edit-src-mode +1)
-            (setq --org-kokoro-save-function
-                  (lambda ()
-                    (let ((--new-text (buffer-substring (point-min) (point-max))))
-                      (with-current-buffer --source-buffer
-                        ;; Replace old src block with newer one
-                        (kill-region --block-beg
-                                     --block-end)
-                        (goto-char --block-beg)
-                        (insert --block-beg-line)
-                        (insert --new-text)
-                        (insert "\n#+END_SRC")
+            (set (make-local-variable '--org-kokoro-save-function)
+                 (lambda ()
+                   (let ((--new-text (buffer-substring (point-min) (point-max))))
+                     (with-current-buffer --source-buffer
+                       ;; Replace old src block with newer one
+                       (kill-region --block-beg
+                                    --block-end)
+                       (goto-char --block-beg)
+                       (insert --block-beg-line)
+                       (insert --new-text)
+                       (insert "\n#+END_SRC")
 
-                        ;; Update src block' beg and end points
-                        (forward-line -1)
-                        (setq blockp (org-between-regexps-p "^[ \t]*#\\+begin_src.*"
-                                                            "^[ \t]*#\\+end_src.*"))
-                        (if blockp
-                            (setq --block-beg (car blockp)
-                                  --block-end (cdr blockp))
-                          (user-error "Error replacing scr block"))))))))
+                       ;; Update src block' beg and end points
+                       (forward-line -1)
+                       (setq blockp (org-between-regexps-p "^[ \t]*#\\+begin_src.*"
+                                                           "^[ \t]*#\\+end_src.*"))
+                       (if blockp
+                           (setq --block-beg (car blockp)
+                                 --block-end (cdr blockp))
+                         (user-error "Error replacing scr block"))))))))
 
       (user-error "Not in a src block"))))
 
@@ -160,8 +164,7 @@
     (let ((--format (format "#+TBLFM: @%d$4='(format \"%%.2f%%%%\" (* (let ((--s (concat  @2$4..@%d$4))) (/ (s-count-matches \"v\" --s) %.1f)) 100))"
                             (+ 2 --question-count)
                             (+ 1 --question-count)
-                            (* --question-count 1.0)
-                            )))
+                            (* --question-count 1.0))))
       (insert --format))))
 
 (provide 'org-kokoro)
