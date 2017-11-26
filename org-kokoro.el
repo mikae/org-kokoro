@@ -167,5 +167,29 @@
                             (* --question-count 1.0))))
       (insert --format))))
 
+;; Hide/toggle src blocks
+(defun org-kokoro--src-blocks-set-visibility (&optional visible)
+  "Hide src blocks.
+If VISIBLE, then make all src blocks visible.
+Otherwise, hide(default)."
+  (save-excursion
+    (goto-char (point-min))
+    (let ((case-fold-search t))
+      (while (re-search-forward "#\\+BEGIN_SRC" nil t)
+        (when (org-at-block-p)
+          (org-hide-block-toggle t)
+          (when visible
+            (org-hide-block-toggle nil)))))))
+
+(defun org-kokoro-src-block-hide-all ()
+  "Hide all src blocks."
+  (interactive)
+  (org-kokoro--src-blocks-set-visibility nil))
+
+(defun org-kokoro-src-block-show-all ()
+  "Show all src blocks."
+  (interactive)
+  (org-kokoro--src-blocks-set-visibility t))
+
 (provide 'org-kokoro)
 ;;; org-kokoro.el ends here
