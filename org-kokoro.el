@@ -191,5 +191,11 @@ Otherwise, hide(default)."
   (interactive)
   (org-kokoro--src-blocks-set-visibility t))
 
+;; org-at-timestamp-p
+(defun org-kokoro-at-timestamp-p (&optional extended)
+  "Returns t, if point at timestamp."
+  (let ((regexp (if extended org-ts-regexp3 org-ts-regexp2)))
+    (org-at-regexp-p regexp)))
+
 (provide 'org-kokoro)
 ;;; org-kokoro.el ends here
