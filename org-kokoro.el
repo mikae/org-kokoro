@@ -46,10 +46,8 @@
   "Minor mode for shadowing some keys."
   :init-value nil
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-x C-s")     #'ignore)
-            (define-key map (kbd "C-x C-c")     #'ignore)
-            (define-key map (kbd "C-x C-x C-s") #'org-kokoro-edit-src-apply)
-            (define-key map (kbd "C-x C-x C-c") #'org-kokoro-edit-src-reject)
+            (define-key map (kbd "C-x C-s") #'org-kokoro-edit-src-apply)
+            (define-key map (kbd "C-x C-c") #'org-kokoro-edit-src-reject)
 
             map))
 
@@ -63,7 +61,9 @@
                      (caar langs))
         (setq --language-mode (intern (concat (symbol-name (cdar langs))
                                               "-mode"))))
-      (setq langs (cdr langs)))))
+      (setq langs (cdr langs)))
+
+    --language-mode))
 
 (defun org-kokoro-edit-src-apply ()
   "Apply changes in edit src buffer"
@@ -104,18 +104,16 @@
                (--language-mode  nil))
 
           ;; Check if the mode from src block is derived mode in `org-src-lang-modes'
-          (setq --language-mode
-                (org-kokoro-edit-src-find-lang --language
-                                               org-src-lang-modes))
+          (setq?! --language-mode
+                  (org-kokoro-edit-src-find-language --language
+                                                     org-src-lang-modes))
 
           ;; Check mode aliases
-          (unless --language-mode
-            (setq --language-mode
-                  (org-kokoro-edit-src-find-lang --language
-                                                 org-kokoro-edit-src-aliases)))
+          (setq?! --language-mode
+                  (org-kokoro-edit-src-find-language --language
+                                                     org-kokoro-edit-src-aliases))
 
-          ;; Check if the mode from src block is derived mode in `org-src-lang-modes'
-
+          (debug)
           ;; Otherwise, try to add "-mode" to language from src block
           (unless --language-mode
             (setq --language-mode (intern (concat --language
