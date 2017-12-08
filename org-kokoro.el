@@ -113,7 +113,6 @@
                   (org-kokoro-edit-src-find-language --language
                                                      org-kokoro-edit-src-aliases))
 
-          (debug)
           ;; Otherwise, try to add "-mode" to language from src block
           (unless --language-mode
             (setq --language-mode (intern (concat --language
