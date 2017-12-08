@@ -1,0 +1,5 @@
+* org-kokoro
+  Some org-mode goodies.
+
+  Dependencies:
+    - [[https:github.com/mikae/emacs-ef][emacs-ef]]

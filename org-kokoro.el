@@ -32,11 +32,14 @@
 ;;
 ;;; Code:
 
+(require 'emacs-ef)
 (require 'org)
 
 ;; Constants
 (defconst org-kokoro-edit-src-buffer-name "org-kokoro: edit src"
   "Name of edit src buffers.")
+
+(defconst org-kokoro-edit-src-aliases '(("dot" . graphviz-dot)))
 
 ;; Modes
 (define-minor-mode org-kokoro-edit-src-mode
@@ -51,6 +54,17 @@
             map))
 
 ;; Goodies
+(defun org-kokoro-edit-src-find-language (lang langs)
+  "Find satisfying LANG in LANGS."
+  (let ((--language-mode))
+    (while (and (null --language-mode)
+                langs)
+      (when (string= lang
+                     (caar langs))
+        (setq --language-mode (intern (concat (symbol-name (cdar langs))
+                                              "-mode"))))
+      (setq langs (cdr langs)))))
+
 (defun org-kokoro-edit-src-apply ()
   "Apply changes in edit src buffer"
   (interactive)
@@ -86,18 +100,21 @@
                (--text           (buffer-substring --beg-end --end-beg))
                (--source-buffer  (current-buffer))
                (--buffer         (generate-new-buffer org-kokoro-edit-src-buffer-name))
-               (--org-langs      org-src-lang-modes)
                (--language       (nth 1 (split-string --block-beg-line)))
                (--language-mode  nil))
 
           ;; Check if the mode from src block is derived mode in `org-src-lang-modes'
-          (while (and (null --language-mode)
-                      --org-langs)
-            (when (string= --language
-                           (caar --org-langs))
-              (setq --language-mode (intern (concat (symbol-name (cdar --org-langs))
-                                                    "-mode"))))
-            (setq --org-langs (cdr --org-langs)))
+          (setq --language-mode
+                (org-kokoro-edit-src-find-lang --language
+                                               org-src-lang-modes))
+
+          ;; Check mode aliases
+          (unless --language-mode
+            (setq --language-mode
+                  (org-kokoro-edit-src-find-lang --language
+                                                 org-kokoro-edit-src-aliases)))
+
+          ;; Check if the mode from src block is derived mode in `org-src-lang-modes'
 
           ;; Otherwise, try to add "-mode" to language from src block
           (unless --language-mode
