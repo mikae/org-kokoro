@@ -32,7 +32,6 @@
 ;;
 ;;; Code:
 
-(require 'emacs-ef)
 (require 'org)
 
 ;; Constants
@@ -104,14 +103,16 @@
                (--language-mode  nil))
 
           ;; Check if the mode from src block is derived mode in `org-src-lang-modes'
-          (setq?! --language-mode
+          (when (null --language-mode)
+            (setq --language-mode
                   (org-kokoro-edit-src-find-language --language
-                                                     org-src-lang-modes))
+                                                     org-src-lang-modes)))
 
           ;; Check mode aliases
-          (setq?! --language-mode
+          (when (null --language-mode)
+            (setq --language-mode
                   (org-kokoro-edit-src-find-language --language
-                                                     org-kokoro-edit-src-aliases))
+                                                     org-kokoro-edit-src-aliases)))
 
           ;; Otherwise, try to add "-mode" to language from src block
           (unless --language-mode
